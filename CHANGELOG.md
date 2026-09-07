@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [2.8.1] — 2026-09-06
+## [2.8.1] — 2026-09-07
 
 ### Security
 - **A webhook could still be sent to a host that refused to resolve** — the guard checks every address a hostname resolves to and blocks private ones, but an unresolvable hostname fell through and the request went out anyway. That branch existed only so two delivery tests aiming at `hooks.example.com` would pass, which made the production behaviour a side effect of the tests. It leaves a rebinding window: answer `NXDOMAIN` while the check runs, resolve to an internal address by the time `requests` looks it up again. Any refusal from the resolver now stops the send, and the tests stub the resolver instead.
