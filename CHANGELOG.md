@@ -6,6 +6,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.8.1] — 2026-09-06
+
+### Security
+- **A webhook could still be sent to a host that refused to resolve** — the guard checks every address a hostname resolves to and blocks private ones, but an unresolvable hostname fell through and the request went out anyway. That branch existed only so two delivery tests aiming at `hooks.example.com` would pass, which made the production behaviour a side effect of the tests. It leaves a rebinding window: answer `NXDOMAIN` while the check runs, resolve to an internal address by the time `requests` looks it up again. Any refusal from the resolver now stops the send, and the tests stub the resolver instead.
+- **The container ran everything as root** — it now creates uid 1000 and drops to it. If you bind-mount `./results` from a directory owned by someone else, `chown -R 1000:1000` on the host. CI checks the image is unprivileged and can still write to all four data directories.
+- **Leaflet was pulled from unpkg with no integrity attribute** — the map page trusted whatever the CDN served. Both the script and the stylesheet now carry the `sha256` hashes published on leafletjs.com, plus `crossorigin`.
+- **numverify was called over plain HTTP** — the phone number and the API key travelled in the query string. It goes over HTTPS now, falling back to HTTP only when the free plan answers with error 105, which is the one case where the API itself refuses TLS.
+- Secret scanning, push protection and Dependabot security updates are on for the repository. That surfaced nine advisories nobody had seen; five are closed by the dependency updates in this release.
+
+### Added
+- **RDAP module** (#306, by [@sOuL2000s](https://github.com/sOuL2000s)) — registration data over RDAP alongside WHOIS, discovering the server per TLD from the IANA bootstrap file and falling back to rdap.org. Returns registration dates, registrar, nameservers and contacts.
+- **Keyboard shortcuts panel.**
+- Tooltips on the standalone tool cards (#305).
+- Multi-arch images on GHCR, built for `linux/amd64` and `linux/arm64` on every release tag.
+- CodeQL on pushes, pull requests and weekly; a labeler; a greeting for first-time contributors; and stale handling for pull requests only, leaving issues alone.
+
+### Fixed
+- **RDAP reported `292` as the registrar** — jCard properties are `[name, params, type, value]`, so reading index 2 returned the type and every contact came back as `"text"`. The registrar was taken from the entity handle instead, which is the IANA registrar id rather than a name. The test fixture used a three-element vCard, which real RDAP never sends, so nothing caught it.
+- **Every `.ru` domain looked unregistered** — a `404` from rdap.org was read as "not registered", but plenty of TLDs serve no RDAP at all. The zone is checked against the bootstrap map first and the module reports `skipped`.
+- **A rate-limited request came back as a CORS error** — `add_middleware` wraps from the inside out, so CORS ended up innermost and anything short-circuited above it answered without the headers. The browser hid the `429` behind an opaque network failure. CORS is outermost now; proxy headers still run before the limiter, so the client IP behind a proxy is unchanged.
+- **File work blocked the event loop in two routes** — the metadata endpoint copied the whole upload to a temp file inline, and clearing scans read every file in `scan_data` inline. Both stalled every other request while they ran, websocket scan progress included.
+- The demo says plainly that AI analysis will not work there, on the page rather than only in the docs.
+
+### Tests
+- 326 → 343, covering the middleware order, the CORS headers on a rate-limited response, and each way the webhook resolver can refuse.
+
+---
+
 ## [2.8.0] — 2026-09-02
 
 ### Fixed
