@@ -959,7 +959,7 @@ export function ScanResults({ scan, onHome }: Props) {
         {tab === 'findings' && (
           <div>
             {opsec?.all_findings?.length ? (
-              <Card 
+              <Card
                 title="Security Findings"
                 extra={
                   <button
@@ -969,11 +969,11 @@ export function ScanResults({ scan, onHome }: Props) {
                       copyValue(messages);
                     }}
                     className="text-[10px] font-medium text-text-3 hover:text-text-1 transition-colors px-2 py-0.5 rounded hover:bg-surface-2 flex items-center gap-1"
-                    title="Copy all findings"
-                    aria-label="Copy all findings"
+                    title={i18n('results.copyAllFindings') !== 'results.copyAllFindings' ? i18n('results.copyAllFindings') : 'Copy all findings'}
+                    aria-label={i18n('results.copyAllFindings') !== 'results.copyAllFindings' ? i18n('results.copyAllFindings') : 'Copy all findings'}
                   >
                     <Copy size={11} />
-                    Copy all
+                    {i18n('results.copyAllFindings') !== 'results.copyAllFindings' ? i18n('results.copyAllFindings') : 'Copy all findings'}
                   </button>
                 }
               >
