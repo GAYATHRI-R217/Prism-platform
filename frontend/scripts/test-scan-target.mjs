@@ -25,9 +25,6 @@ try {
   await writeFile(modulePath, compiled, 'utf8');
   const { detectScanType, normalizeScanTarget } = await import(pathToFileURL(modulePath).href);
 
-  // ===== normalizeScanTarget tests =====
-
-  // Existing tests
   assert.equal(normalizeScanTarget(' Example.COM '), 'example.com');
   assert.equal(normalizeScanTarget('https://Example.COM/'), 'example.com');
   assert.equal(normalizeScanTarget('HTTP://Example.COM//'), 'example.com');
@@ -35,9 +32,6 @@ try {
   assert.equal(normalizeScanTarget('+1 555 000 0000'), '+1 555 000 0000');
   assert.equal(normalizeScanTarget('@MixedCaseUser'), '@MixedCaseUser');
 
-  // New edge-case tests
-
-  // URLs with paths and ports → host only
   assert.equal(
     normalizeScanTarget('https://example.com:8443/path/to/resource'),
     'example.com',
@@ -54,7 +48,6 @@ try {
     'Uppercase URL with port should be lowercased'
   );
 
-  // mailto: prefix → extract email (but preserve mailto: for detection)
   assert.equal(
     normalizeScanTarget('mailto:user@example.com'),
     'mailto:user@example.com',
@@ -66,7 +59,6 @@ try {
     'mailto: prefix should be lowercased and email lowercased'
   );
 
-  // Usernames with leading @ (already covered, but adding explicit)
   assert.equal(
     normalizeScanTarget('@username'),
     '@username',
@@ -78,7 +70,6 @@ try {
     'Username with @ and whitespace should be trimmed'
   );
 
-  // IPv6 addresses
   assert.equal(
     normalizeScanTarget('2001:0db8:85a3:0000:0000:8a2e:0370:7334'),
     '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
@@ -95,7 +86,6 @@ try {
     'IPv6 link-local should be preserved'
   );
 
-  // Surrounding whitespace and trailing dots
   assert.equal(
     normalizeScanTarget('  example.com  '),
     'example.com',
@@ -117,7 +107,6 @@ try {
     'Subdomain with trailing dot should be trimmed'
   );
 
-  // Uppercase domains → lowercased (additional cases)
   assert.equal(
     normalizeScanTarget('EXAMPLE.COM'),
     'example.com',
@@ -129,24 +118,17 @@ try {
     'Mixed-case domain should be lowercased'
   );
 
-  // Emails with surrounding whitespace
   assert.equal(
     normalizeScanTarget('  user@example.com  '),
     'user@example.com',
     'Email with whitespace should be trimmed and lowercased'
   );
 
-  // ===== detectScanType tests =====
-
-  // Existing tests
   assert.equal(detectScanType(' https://Example.COM/ '), 'domain');
   assert.equal(detectScanType(' USER@Example.COM '), 'email');
   assert.equal(detectScanType('+1 555 000 0000'), 'phone');
   assert.equal(detectScanType('@MixedCaseUser'), 'username');
 
-  // New edge-case tests
-
-  // URLs with paths/ports → domain
   assert.equal(
     detectScanType('https://example.com:8443/path'),
     'domain',
@@ -158,7 +140,6 @@ try {
     'Subdomain URL with port should detect as domain'
   );
 
-  // mailto: prefix → email
   assert.equal(
     detectScanType('mailto:user@example.com'),
     'email',
@@ -170,7 +151,6 @@ try {
     'mailto: uppercase should detect as email'
   );
 
-  // Usernames with leading @ → username
   assert.equal(
     detectScanType('@username'),
     'username',
@@ -182,7 +162,6 @@ try {
     'Username with @ and whitespace should detect as username'
   );
 
-  // IPv6 addresses → ip
   assert.equal(
     detectScanType('2001:0db8:85a3:0000:0000:8a2e:0370:7334'),
     'ip',
@@ -204,21 +183,18 @@ try {
     'IPv6 shorthand should detect as ip'
   );
 
-  // Emails with whitespace → email
   assert.equal(
     detectScanType('  user@example.com  '),
     'email',
     'Email with whitespace should detect as email'
   );
 
-  // Domains with trailing dot → domain
   assert.equal(
     detectScanType('example.com.'),
     'domain',
     'Domain with trailing dot should detect as domain'
   );
 
-  // Uppercase domains → domain
   assert.equal(
     detectScanType('EXAMPLE.COM'),
     'domain',
