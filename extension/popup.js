@@ -125,12 +125,12 @@ async function runPageScan() {
 
   const url = new URL(tab.url);
 
-  if (["chrome:", "about:", "file:"].includes(url.protocol)) {
-    return fail("This page cannot be scanned.");
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+  return fail(t("scanPageUnsupported", "This page cannot be scanned."));
   }
 
   const target = url.hostname;
-  if (!target) return fail("Could not determine the page hostname.");
+  if (!target) return fail(t("scanPageHostname", "Could not determine the page hostname."));
 
   const server = baseUrl(urlInput.value);
   const apiKey = keyInput.value.trim();
